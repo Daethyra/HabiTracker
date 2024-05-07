@@ -27,9 +27,9 @@ class HabitTracker:
         except sqlite3.Error as e:
             raise DatabaseError(f"Error connecting to database: {e}") from e
 
-    def create_tables(self) -> None:
+    def create_necessary_tables(self) -> None:
         """
-        Creates the necessary tables in the database.
+        Creates the necessary tables in the database. This should be run once after initializing the database.
 
         This method creates the 'habits' and 'habit_entries' tables if they don't already exist.
         """
@@ -66,7 +66,7 @@ class HabitTracker:
 
     def create_habit(self, habit_name: str, habit_description: Optional[str] = None) -> None:
         """
-        Create a new habit in the database.
+        Create a new table (habit) in the database.
 
         Args:
             habit_name (str): The name of the habit to create.
@@ -78,7 +78,7 @@ class HabitTracker:
         Example:
             tracker = HabitTracker()
             tracker.initialize_database()
-            tracker.create_tables()
+            tracker.create_necessary_tables()
             tracker.create_habit("Smoking", "A bad habit")
         """
         if not self.conn:
@@ -109,7 +109,7 @@ class HabitTracker:
         Example:
             tracker = HabitTracker()
             tracker.initialize_database()
-            tracker.create_tables()
+            tracker.create_necessary_tables()
             tracker.create_habit("Smoking", "A bad habit")
             tracker.record_habit_entry("Smoking")
         """
