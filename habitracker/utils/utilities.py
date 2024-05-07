@@ -1,74 +1,134 @@
 import sqlite3
 import logging
-import datetime
+from datetime import datetime
 from typing import Optional
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(levelname)s: %(message)s")
 
+class DatabaseError(Exception):
+    """Custom exception for database-related errors."""
+    pass
 
-def create_and_connect_db(db_name: str = "habitrack.db") -> Optional[sqlite3.Connection]:
-    """
-    Creates a SQLite database and connects to it.
+class HabitTracker:
+    def __init__(self, db_name: str = "habitrack.db"):
+        self.db_name = db_name
+        self.conn = None
 
-    Args:
-        db_name (str): The name of the database file. Defaults to 'habitrack.db'.
+    def initialize_database(self) -> None:
+        """
+        Initializes the SQLite database.
 
-    Returns:
-        Optional[sqlite3.Connection]: A connection to the database, or None if an error occurs.
-    """
-    try:
-        # Check if the database connection already exists
-        with sqlite3.connect(db_name) as conn:
-            logging.info(f"Connected to existing database: {db_name}")
-            return conn
-    except sqlite3.Error as e:
-        logging.error(f"Error connecting to database: {e}")
+        Creates a new database if it doesn't exist, or connects to an existing one.
+        """
+        try:
+            self.conn = sqlite3.connect(self.db_name)
+            logging.info(f"Connected to existing database: {self.db_name}")
+        except sqlite3.Error as e:
+            raise DatabaseError(f"Error connecting to database: {e}") from e
 
-    try:
-        # Create the database if it doesn't exist
-        with sqlite3.connect(db_name) as conn:
-            logging.info(f"Created new database: {db_name}")
+    def create_tables(self) -> None:
+        """
+        Creates the necessary tables in the database.
 
-            try:
-                # Create the habits table
-                conn.execute(
-                    """
-                    CREATE TABLE IF NOT EXISTS habits (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        habit_name TEXT,
-                        timestamp TEXT
-                    )
+        This method creates the 'habits' and 'habit_entries' tables if they don't already exist.
+        """
+        if not self.conn:
+            raise DatabaseError("Database connection not established")
+
+        try:
+            # Create the habits table
+            self.conn.execute(
                 """
+                CREATE TABLE IF NOT EXISTS habits (
+                    habit_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    habit_name TEXT UNIQUE NOT NULL,
+                    habit_description TEXT
                 )
-                logging.info("Created 'habits' table")
-            except sqlite3.Error as e:
-                logging.error(f"Error creating 'habits' table: {e}")
+                """
+            )
+            logging.info("Created 'habits' table")
 
-            return conn
-    except sqlite3.Error as e:
-        logging.error(f"Error creating database: {e}")
-        return None
+            # Create the habit_entries table
+            self.conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS habit_entries (
+                    entry_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    habit_id INTEGER NOT NULL,
+                    entry_timestamp TIMESTAMP NOT NULL,
+                    FOREIGN KEY (habit_id) REFERENCES habits(habit_id)
+                )
+                """
+            )
+            logging.info("Created 'habit_entries' table")
+        except sqlite3.Error as e:
+            raise DatabaseError(f"Error creating tables: {e}") from e
 
+    def create_habit(self, habit_name: str, habit_description: Optional[str] = None) -> None:
+        """
+        Create a new habit in the database.
 
-# Function to record a habit event
-def record_habit(conn: sqlite3.Connection, habit_name: str) -> None:
-    """
-    Record a habit event in the database.
+        Args:
+            habit_name (str): The name of the habit to create.
+            habit_description (Optional[str]): An optional description of the habit.
 
-    Args:
-        conn (sqlite3.Connection): The database connection.
-        habit_name (str): The name of the habit to record.
+        Raises:
+            DatabaseError: If an error occurs while creating the habit.
 
-    Returns:
-        None
-    """
-    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    logging.info(f"Recording habit: {habit_name}, timestamp: {timestamp}")
+        Example:
+            tracker = HabitTracker()
+            tracker.initialize_database()
+            tracker.create_tables()
+            tracker.create_habit("Smoking", "A bad habit")
+        """
+        if not self.conn:
+            raise DatabaseError("Database connection not established")
 
-    conn.execute(
-        "INSERT INTO habits (habit_name, timestamp) VALUES (?, ?)",
-        (habit_name, timestamp),
-    )
-    conn.commit()
-    logging.info(f"Successfully recorded habit: {habit_name}, timestamp: {timestamp}")
+        try:
+            self.conn.execute(
+                "INSERT INTO habits (habit_name, habit_description) VALUES (?, ?)",
+                (habit_name, habit_description)
+            )
+            self.conn.commit()
+            logging.info(f"Successfully created habit: {habit_name}")
+        except sqlite3.IntegrityError:
+            logging.info(f"Habit '{habit_name}' already exists")
+        except sqlite3.Error as e:
+            raise DatabaseError(f"Error creating habit: {e}") from e
+
+    def record_habit_entry(self, habit_name: str) -> None:
+        """
+        Record a new habit entry in the database.
+
+        Args:
+            habit_name (str): The name of the habit to record.
+
+        Raises:
+            DatabaseError: If an error occurs while recording the habit entry.
+
+        Example:
+            tracker = HabitTracker()
+            tracker.initialize_database()
+            tracker.create_tables()
+            tracker.create_habit("Smoking", "A bad habit")
+            tracker.record_habit_entry("Smoking")
+        """
+        if not self.conn:
+            raise DatabaseError("Database connection not established")
+
+        try:
+            with self.conn:
+                # Get the habit_id for the given habit_name
+                habit_id = self.conn.execute(
+                    "SELECT habit_id FROM habits WHERE habit_name = ?",
+                    (habit_name,)
+                ).fetchone()[0]
+
+                # Insert a new entry into the habit_entries table
+                self.conn.execute(
+                    "INSERT INTO habit_entries (habit_id, entry_timestamp) VALUES (?, ?)",
+                    (habit_id, datetime.now())
+                )
+            logging.info(f"Successfully recorded entry for habit: {habit_name}")
+        except sqlite3.Error as e:
+            raise DatabaseError(f"Error recording habit entry: {e}") from e
