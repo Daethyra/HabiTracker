@@ -66,7 +66,7 @@ class HabitTracker:
 
     def create_habit(self, habit_name: str, habit_description: Optional[str] = None) -> None:
         """
-        Create a new table (habit) in the database.
+        Create a new habit in the database.
 
         Args:
             habit_name (str): The name of the habit to create.
@@ -74,6 +74,7 @@ class HabitTracker:
 
         Raises:
             DatabaseError: If an error occurs while creating the habit.
+            ValueError: If the habit_name is an empty string or contains only whitespace characters.
 
         Example:
             tracker = HabitTracker()
@@ -84,15 +85,23 @@ class HabitTracker:
         if not self.conn:
             raise DatabaseError("Database connection not established")
 
+        # Check if the habit_name is valid
+        if not habit_name or habit_name.isspace():
+            raise ValueError("Habit name cannot be empty or contain only whitespace characters")
+
         try:
             self.conn.execute(
                 "INSERT INTO habits (habit_name, habit_description) VALUES (?, ?)",
-                (habit_name, habit_description)
+                (habit_name.strip(), habit_description)
             )
             self.conn.commit()
             logging.info(f"Successfully created habit: {habit_name}")
-        except sqlite3.IntegrityError:
-            logging.info(f"Habit '{habit_name}' already exists")
+        except sqlite3.IntegrityError as e:
+            # Handle the case where the habit already exists
+            if "UNIQUE constraint failed: habits.habit_name" in str(e):
+                logging.info(f"Habit '{habit_name}' already exists")
+            else:
+                raise DatabaseError(f"Error creating habit: {e}") from e
         except sqlite3.Error as e:
             raise DatabaseError(f"Error creating habit: {e}") from e
 
