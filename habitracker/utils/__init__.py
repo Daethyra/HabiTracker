@@ -1,1 +1,1 @@
-from .utilities import HabitTracker
+from .utilities import HabiTracker

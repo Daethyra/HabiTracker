@@ -10,7 +10,7 @@ class DatabaseError(Exception):
     """Custom exception for database-related errors."""
     pass
 
-class HabitTracker:
+class HabiTracker:
     def __init__(self, db_name: str = "habitrack.db"):
         self.db_name = db_name
         self.conn = None
