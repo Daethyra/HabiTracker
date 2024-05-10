@@ -141,3 +141,30 @@ class HabiTracker:
             logging.info(f"Successfully recorded entry for habit: {habit_name}")
         except sqlite3.Error as e:
             raise DatabaseError(f"Error recording habit entry: {e}") from e
+
+
+# Display the past 4 weeks in a markdown table
+def display_habit_history(conn: sqlite3.Connection, habit_name: str) -> None:
+    """
+    Display the past 4 weeks of habit entries in a markdown table.
+
+    Args:
+        conn (sqlite3.Connection): The database connection object.
+        habit_name (str): The name of the habit to display entries for.
+
+    Raises:
+        DatabaseError: If an error occurs while querying the database.
+    """
+    if not conn:
+        raise DatabaseError("Database connection not established")
+
+    try:
+        st.markdown("<h3>Habits in the last four weeks:</h3>", unsafe_allow_html=True)
+        st.markdown("| Habit Name | Last Entry |", unsafe_allow_html=True)
+        for row in query_result:
+            st.markdown(
+                f"| {row[0]} | {row[1].strftime('%Y-%m-%d %H:%M:%S')} |",
+                unsafe_allow_html=True,
+            )
+    except Exception as e:
+        st.error(f"Error querying database: {e}")
