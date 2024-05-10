@@ -47,7 +47,7 @@ class HabiTracker:
                 )
                 """
             )
-            logging.info("Created 'habits' table")
+            logging.info("Successfully checked 'habits' table exists")
 
             # Create the habit_entries table
             self.conn.execute(
@@ -60,7 +60,7 @@ class HabiTracker:
                 )
                 """
             )
-            logging.info("Created 'habit_entries' table")
+            logging.info("Successfully checked 'habit_entries' table exists")
         except sqlite3.Error as e:
             raise DatabaseError(f"Error creating tables: {e}") from e
 
