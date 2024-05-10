@@ -1,1 +1,1 @@
-from .utilities import HabiTracker
+from .utilities import HabiTracker, DatabaseError
