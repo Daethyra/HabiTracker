@@ -42,32 +42,34 @@ habit_description = st.text_input("Optionally, describe the habit:")
 col1, col2, col3 = st.columns(spec=[1, 1, 1])  # three columns with equal width
 
 # Button to RECORD the habit
-with col1:
-    st.button(
+if col1.button(
         label="Record",
         key="record_button",
         help="Record a habit entry.",
-        on_click=tracker.record_habit_entry(habit_name),
-    )
+    ):
+    try:
+        tracker.record_habit_entry(habit_name)
+    except Exception as e:
+        st.error(f"Failed to record habit entry: {e}")
 
 # Button to CREATE new habit
-with col2:
-    st.button(
+if col2.button(
         label="Create New Habit",
         key="create_habit_button",
         help="Create a new habit in the database.",
-        on_click=tracker.create_habit(
-            habit_name, habit_description if habit_description else None
-        ),
-    )
+    ):
+    try:
+        tracker.create_habit(habit_name, habit_description if habit_description else None)
+    except Exception as e:
+        st.error(f"Failed to create habit: {e}")
 
 # Button to SEARCH
 if col3.button(
     label="Search",
     key="search_button",
     help="Search for habits in the last four weeks.",
-    # Display the past 4 weeks in a markdown table
 ):
+    # Display the past 4 weeks in a markdown table
     display_habit_history(tracker.conn, habit_name)
 
 # Display the results in a heatmap
