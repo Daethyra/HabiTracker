@@ -62,13 +62,13 @@ with col2:
     )
 
 # Button to SEARCH
-col3.button(
+if col3.button(
     label="Search",
     key="search_button",
     help="Search for habits in the last four weeks.",
     # Display the past 4 weeks in a markdown table
-    on_click=display_habit_history(tracker.conn, habit_name),
-)
+):
+    display_habit_history(tracker.conn, habit_name)
 
 # Display the results in a heatmap
 

@@ -1,14 +1,21 @@
-import sqlite3
 import logging
+import sqlite3
 from datetime import datetime
 from typing import Optional
 
+import streamlit as st
+
 # Set up logging
-logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(levelname)s: %(message)s")
+logging.basicConfig(
+    level=logging.DEBUG, format="%(asctime)s %(levelname)s: %(message)s"
+)
+
 
 class DatabaseError(Exception):
     """Custom exception for database-related errors."""
+
     pass
+
 
 class HabiTracker:
     def __init__(self, db_name: str = "habitrack.db"):
@@ -64,7 +71,9 @@ class HabiTracker:
         except sqlite3.Error as e:
             raise DatabaseError(f"Error creating tables: {e}") from e
 
-    def create_habit(self, habit_name: str, habit_description: Optional[str] = None) -> None:
+    def create_habit(
+        self, habit_name: str, habit_description: Optional[str] = None
+    ) -> None:
         """
         Create a new habit in the database.
 
@@ -87,12 +96,14 @@ class HabiTracker:
 
         # Check if the habit_name is valid
         if not habit_name or habit_name.isspace():
-            raise ValueError("Habit name cannot be empty or contain only whitespace characters")
+            raise ValueError(
+                "Habit name cannot be empty or contain only whitespace characters"
+            )
 
         try:
             self.conn.execute(
                 "INSERT INTO habits (habit_name, habit_description) VALUES (?, ?)",
-                (habit_name.strip(), habit_description)
+                (habit_name.strip(), habit_description),
             )
             self.conn.commit()
             logging.info(f"Successfully created habit: {habit_name}")
