@@ -1,12 +1,5 @@
 # HabiTracker: Track Your Usage and Gather Data Over Time
 
-#### Project Vocabulary
-| Word | Definition |
-|---------------|--------------------------------------------------------------|
-| Habit | A behavior to be recorded. |
-| Use (Noun) | A timestamped action. An instance of using something. A partaking. |
-| Event | A row in the database table representing a 'Use.' |
-
 ## Project Goals
 The application must:
 - Maintain a database of habit data
@@ -39,6 +32,8 @@ The application should have:
 - `habit_id` (Foreign Key referencing Habits table)
 - `entry_timestamp` (Timestamp of when the entry was recorded, down to the second)
 
+## Miscellaneous
+
 ### Example SQL Queries for Database Interactions
 - **Count** the number of times a habit has been used in the past day
 ```SQL
@@ -49,3 +44,11 @@ WHERE habit_id = (
     FROM Habits
     WHERE habit_name = 'Smoke a Bowl'
 ) AND entry_timestamp BETWEEN '2023-05-07 00:00:00' AND '2023-05-07 23:59:59';
+```
+
+### Project Vocabulary
+| Word | Definition |
+|---------------|--------------------------------------------------------------|
+| Habit | A behavior to be recorded. |
+| Use | A timestamped action. An instance of using something. A partaking. |
+| Event | A row in the database table representing a 'Use.' |

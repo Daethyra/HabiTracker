@@ -25,3 +25,9 @@ habit_name = st.text_input("Enter the name of the habit you want to track:")
 if st.button("Record"):
     record_habit(db_conn, habit_name)
     st.success(f"Recorded habit: {habit_name}")
+
+# Define the database cursor
+
+# Query the database for specific habits within the last four weeks
+
+# Display the results in a heatmap
