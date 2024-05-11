@@ -12,23 +12,21 @@ st.title(":orange[HabiTrack]")
 
 # Instantiate the HabitTracker class
 tracker = HabiTracker()
-st.success("Initializing database...")
 
-# Initialize the database
 try:
+    # Initialize the database
     tracker.initialize_database()
     # Check if the database connection was successful
     if not tracker.conn:
         logging.error("Failed to create or connect to the database.")
         st.error("Failed to create or connect to the database.")
         st.stop()
-    st.success("Database connection initialized!")
 except Exception as e:
     # Directly print result
     st.error(f"{e}")
 
-# Create the necessary tables
 try:
+    # Create the necessary tables
     tracker.create_necessary_tables()
 except Exception as e:
     st.error(f"Failed to create necessary tables: {e}")
@@ -64,13 +62,15 @@ if col2.button(
         st.error(f"Failed to create habit: {e}")
 
 # Button to SEARCH
-if col3.button(
+if not col3.button(
     label="Search",
     key="search_button",
     help="Search for habits in the last four weeks.",
 ):
-    # Display the past 4 weeks in a markdown table
-    display_habit_history(tracker.conn, habit_name)
+    st.stop()
+
+# Display the past 4 weeks in a markdown table
+display_habit_history(tracker.conn, habit_name)
 
 # Display the results in a heatmap
 
