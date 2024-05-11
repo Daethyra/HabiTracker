@@ -167,7 +167,7 @@ def display_habit_history(conn: sqlite3.Connection, habit_name: str) -> None:
         DatabaseError: If an error occurs while querying the database.
     """
     if not conn:
-        conn = sqlite3.connect(self.db_name)
+        raise DatabaseError("Database connection not established")
 
     try:
         st.markdown("<h3>Habits in the last four weeks:</h3>", unsafe_allow_html=True)
