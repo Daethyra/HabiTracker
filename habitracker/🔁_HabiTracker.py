@@ -9,27 +9,34 @@ from utils import HabiTracker, DatabaseError, display_habit_history
 st.set_page_config(page_title="HabiTrack: Visualize Your Usage", page_icon="🔁")
 st.title(":orange[HabiTrack]")
 
+# NOTE: https://discuss.streamlit.io/t/hide-button-b-with-button-a-without-clicking-twice/42835/2?u=daethyra
+# Hide the setup button after setup is complete #
+# Manually boot up database
+if "conn" not in st.session_state:
 
-# Instantiate the HabitTracker class
-tracker = HabiTracker()
+        if st.button("Boot up database"):
+            try:
+                
+                # Instantiate the HabitTracker class
+                tracker = HabiTracker()
+                
+                # Store the connection in the session state
+                st.session_state["conn"] = tracker
+                
+                # Initialize the database
+                st.session_state.conn.initialize_database()
+                
+                # Create the necessary tables
+                st.session_state.conn.create_necessary_tables()
 
-try:
-    # Initialize the database
-    tracker.initialize_database()
-    # Check if the database connection was successful
-    if not tracker.conn:
-        logging.error("Failed to create or connect to the database.")
-        st.error("Failed to create or connect to the database.")
-        st.stop()
-except Exception as e:
-    # Directly print result
-    st.error(f"{e}")
-
-try:
-    # Create the necessary tables
-    tracker.create_necessary_tables()
-except Exception as e:
-    st.error(f"Failed to create necessary tables: {e}")
+                # Set the setup flag to True
+                st.session_state.setup_complete = True
+                
+            except Exception as e:
+                st.error(f"Database Operation Failed!: {e}")
+    
+        else:
+            st.stop()
 
 # Input box for the habit name
 habit_name = st.text_input("Enter the name of the habit you want to track:")
@@ -69,10 +76,12 @@ if not col3.button(
 ):
     st.stop()
 
+###
+st.divider()
+
 # Display the past 4 weeks in a markdown table
 display_habit_history(tracker.conn, habit_name)
 
 # Display the results in a heatmap
 
-###
-st.divider()
+
