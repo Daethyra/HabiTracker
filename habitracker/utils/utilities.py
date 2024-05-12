@@ -169,9 +169,24 @@ def display_habit_history(conn: sqlite3.Connection, habit_name: str) -> None:
     if not conn:
         raise DatabaseError("Database connection not established")
 
+    # Query the database for the last four weeks worth of entries regarding the given habit name
+    query_result = conn.execute(
+        """
+        SELECT h.habit_name, he.entry_timestamp
+        FROM habit_entries he
+        INNER JOIN habits h ON he.habit_id = h.habit_id
+        WHERE h.habit_name = ? AND he.entry_timestamp >= datetime('now', '-4 weeks')
+        ORDER BY he.entry_timestamp DESC
+        """,
+        (habit_name,)
+    ).fetchall() # Store the result of a query in a variable
     try:
+        # Section Header
         st.markdown("<h3>Habits in the last four weeks:</h3>", unsafe_allow_html=True)
+        # Table Header
         st.markdown("| Habit Name | Last Entry |", unsafe_allow_html=True)
+        
+        # Iteratively insert data into the table
         for row in query_result:
             st.markdown(
                 f"| {row[0]} | {row[1].strftime('%Y-%m-%d %H:%M:%S')} |",
