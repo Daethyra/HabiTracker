@@ -114,6 +114,7 @@ class HabiTracker:
             # Need to add a case for when there's a an update to the description, should ask user for confirmation with both the before and after shown to them
             if "UNIQUE constraint failed: habits.habit_name" in str(e):
                 logging.info(f"Habit '{habit_name}' already exists")
+                st.warning(f"Habit '{habit_name}' already exists")
             else:
                 raise DatabaseError(f"Error creating habit: {e}") from e
         except sqlite3.Error as e:
@@ -154,7 +155,7 @@ class HabiTracker:
                     (habit_id, execution_timestamp),
                 )
             logging.info(f"Successfully recorded entry for habit: {habit_name}")
-            st.success(f"Successfully recorded entry for habit: {habit_name} at {execution_timestamp}")
+            st.success(f"Successfully recorded entry for habit: {habit_name.upper()} at ({execution_timestamp})")
             
         except sqlite3.Error as e:
             raise DatabaseError(f"Error recording habit entry: {e}") from e
