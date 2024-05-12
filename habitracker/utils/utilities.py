@@ -107,6 +107,8 @@ class HabiTracker:
             )
             self.conn.commit()
             logging.info(f"Successfully created habit: {habit_name}")
+            st.success(f"Successfully created habit: {habit_name}")
+            
         except sqlite3.IntegrityError as e:
             # Handle the case where the habit already exists
             if "UNIQUE constraint failed: habits.habit_name" in str(e):
@@ -138,18 +140,20 @@ class HabiTracker:
 
         try:
             with self.conn:
-                # Get the habit_id for the given habit_name
+                # First we need to Get the habit_id for the given habit_name
                 habit_id = self.conn.execute(
                     "SELECT habit_id FROM habits WHERE habit_name = ?",
                     (habit_name,)
                 ).fetchone()[0]
 
-                # Insert a new entry into the habit_entries table
+                # Now we can Insert a new entry into the habit_entries table
                 self.conn.execute(
                     "INSERT INTO habit_entries (habit_id, entry_timestamp) VALUES (?, ?)",
                     (habit_id, datetime.now())
                 )
             logging.info(f"Successfully recorded entry for habit: {habit_name}")
+            st.success(f"Successfully recorded entry for habit: {habit_name}")
+            
         except sqlite3.Error as e:
             raise DatabaseError(f"Error recording habit entry: {e}") from e
 
