@@ -147,13 +147,14 @@ class HabiTracker:
                     (habit_name,)
                 ).fetchone()[0]
 
+                execution_timestamp = datetime.now()
                 # Now we can Insert a new entry into the habit_entries table
                 self.conn.execute(
                     "INSERT INTO habit_entries (habit_id, entry_timestamp) VALUES (?, ?)",
-                    (habit_id, datetime.now())
+                    (habit_id, execution_timestamp),
                 )
             logging.info(f"Successfully recorded entry for habit: {habit_name}")
-            st.success(f"Successfully recorded entry for habit: {habit_name}")
+            st.success(f"Successfully recorded entry for habit: {habit_name} at {execution_timestamp}")
             
         except sqlite3.Error as e:
             raise DatabaseError(f"Error recording habit entry: {e}") from e
