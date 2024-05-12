@@ -111,6 +111,7 @@ class HabiTracker:
             
         except sqlite3.IntegrityError as e:
             # Handle the case where the habit already exists
+            # Need to add a case for when there's a an update to the description, should ask user for confirmation with both the before and after shown to them
             if "UNIQUE constraint failed: habits.habit_name" in str(e):
                 logging.info(f"Habit '{habit_name}' already exists")
             else:
