@@ -5,6 +5,8 @@ import logging
 
 from utils import HabiTracker, DatabaseError, display_habit_history
 
+# NOTE: check out the `st.experimental_dialog` documentation to do updates over the database
+
 # Configure the app
 st.set_page_config(page_title="HabiTrack: Visualize Your Usage", page_icon="🔁")
 st.title(":orange[HabiTrack]")
