@@ -85,5 +85,6 @@ st.divider()
 display_habit_history(tracker.conn, habit_name)
 
 # Display the results in a heatmap
-
+# NOTE: Use `calplot`?
+# https://python-charts.com/evolution/calendar-heatmap-matplotlib/
 
