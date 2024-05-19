@@ -78,8 +78,9 @@ if entries:
         vmin=vmin,
         vmax=vmax,
         colorbar=True,
-        suptitle=f"Heatmap for {habit_to_visualize if visualize_option == 'Specific Habit' else 'All Habits'}",
+        suptitle=f'''Heatmap for "{habit_to_visualize if visualize_option == 'Specific Habit' else 'All Habits'}"''',
         figsize=(10, 3),
+        yearlabel_kws={'fontname':'Arial'},
     )
     # Display the heatmap
     st.pyplot(fig)
