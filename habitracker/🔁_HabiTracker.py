@@ -54,8 +54,17 @@ if entries:
     start_date = end_date - timedelta(weeks=6)
     df = df[(df["date"] >= start_date) & (df["date"] <= end_date)]
 
+    # Generate a complete date range
+    all_dates = pd.date_range(start=start_date, end=end_date).date
+    all_dates_df = pd.DataFrame(all_dates, columns=["date"])
+
     # Group by date and count occurrences
     heatmap_data = df.groupby("date").size().reset_index(name="count")
+
+    # Merge with the complete date range to fill missing dates with zero counts
+    heatmap_data = all_dates_df.merge(heatmap_data, on="date", how="left").fillna(0)
+
+    # Pivot the data to create a matrix suitable for a heatmap
     heatmap_data = heatmap_data.pivot_table(
         index="date", values="count", aggfunc="sum"
     ).fillna(0)
@@ -79,7 +88,7 @@ if entries:
         norm = plt.Normalize(vmin=0, vmax=20)
 
     sns.heatmap(
-        heatmap_data.T, cmap=cmap, norm=norm, cbar=True, ax=ax, annot=True, fmt="d"
+        heatmap_data.T, cmap=cmap, norm=norm, cbar=True, ax=ax, annot=True, fmt="g"
     )
     ax.set_title(
         f"Heatmap for {habit_to_visualize if visualize_option == 'Specific Habit' else 'All Habits'}"
