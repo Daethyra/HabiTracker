@@ -1,5 +1,5 @@
 habitrack.db
-habitracker/utils/sheets
+assets/**.xlsx
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
