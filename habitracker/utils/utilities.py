@@ -161,44 +161,40 @@ class HabiTracker:
         except sqlite3.Error as e:
             raise DatabaseError(f"Error recording habit entry: {e}") from e
 
-
-# Display the past 4 weeks in a markdown table
-def display_habit_history(conn: sqlite3.Connection, habit_name: str) -> None:
-    """
-    Display the past 4 weeks of habit entries in a markdown table.
-
-    Args:
-        conn (sqlite3.Connection): The database connection object.
-        habit_name (str): The name of the habit to display entries for.
-
-    Raises:
-        DatabaseError: If an error occurs while querying the database.
-    """
-    if not conn:
-        raise DatabaseError("Database connection not established")
-
-    # Query the database for the last four weeks worth of entries regarding the given habit name
-    query_result = conn.execute(
+    def get_habits(self) -> List[str]:
         """
-        SELECT h.habit_name, he.entry_timestamp
-        FROM habit_entries he
-        INNER JOIN habits h ON he.habit_id = h.habit_id
-        WHERE h.habit_name = ? AND he.entry_timestamp >= datetime('now', '-4 weeks')
-        ORDER BY he.entry_timestamp DESC
-        """,
-        (habit_name,),
-    ).fetchall()  # Store the result of a query in a variable
-    try:
-        # Section Header
-        st.markdown("<h3>Habits in the last four weeks:</h3>", unsafe_allow_html=True)
-        # Table Header
-        st.markdown("| Habit Name | Last Entry |", unsafe_allow_html=True)
+        Retrieve all habits from the database.
+        """
+        if not self.conn:
+            raise DatabaseError("Database connection not established")
 
-        # Iteratively insert data into the table
-        for row in query_result:
-            st.markdown(
-                f"| {row[0]} | {row[1].strftime('%Y-%m-%d %H:%M:%S')} |",
-                unsafe_allow_html=True,
-            )
-    except Exception as e:
-        st.error(f"Error querying database: {e}")
+        try:
+            habits = self.conn.execute("SELECT habit_name FROM habits").fetchall()
+            return [habit[0] for habit in habits]
+        except sqlite3.Error as e:
+            raise DatabaseError(f"Error retrieving habits: {e}") from e
+
+    def get_habit_entries(self, habit_name: str = None) -> List[str]:
+        """
+        Retrieve habit entries from the database.
+        """
+        if not self.conn:
+            raise DatabaseError("Database connection not established")
+
+        try:
+            if habit_name:
+                habit_id = self.conn.execute(
+                    "SELECT habit_id FROM habits WHERE habit_name = ?",
+                    (habit_name,)
+                ).fetchone()[0]
+                entries = self.conn.execute(
+                    "SELECT entry_timestamp FROM habit_entries WHERE habit_id = ?",
+                    (habit_id,)
+                ).fetchall()
+            else:
+                entries = self.conn.execute(
+                    "SELECT entry_timestamp FROM habit_entries"
+                ).fetchall()
+            return [entry[0] for entry in entries]
+        except sqlite3.Error as e:
+            raise DatabaseError(f"Error retrieving habit entries: {e}") from e
