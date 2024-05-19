@@ -65,12 +65,12 @@ if entries:
     # Create a calendar heatmap using calplot
     if visualize_option == "Specific Habit" and habit_to_visualize == "smoke weed":
         # Custom color scale for "smoke weed"
-        cmap = ListedColormap(["#9fc5e8", "#93c47d", "#f44336", "#990a00"])
-        vmin, vmax = 0, 6
+        cmap = ListedColormap(["#9fc5e8", "#93c47d", "#ffd966", "#990a00"])
+        vmin, vmax = 0, 4
     else:
         # Custom color scale for the main heatmap
-        cmap = ListedColormap(["#9fc5e8", "#93c47d", "#f44336", "#990a00"])
-        vmin, vmax = 0, 20
+        cmap = ListedColormap(["#9fc5e8", "#93c47d", "#ffd966", "#990a00"])
+        vmin, vmax = 0, 19
 
     fig, ax = calplot.calplot(
         heatmap_data["count"],
@@ -79,7 +79,7 @@ if entries:
         vmax=vmax,
         colorbar=True,
         suptitle=f"Heatmap for {habit_to_visualize if visualize_option == 'Specific Habit' else 'All Habits'}",
-        figsize=(10, 6),
+        figsize=(10, 3),
     )
     st.pyplot(fig)
 else:
