@@ -1,43 +1,68 @@
 import os
+import argparse
 import pandas as pd
 from datetime import datetime, timedelta
-from openpyxl import load_workbook
-
 from utilities import HabiTracker, DatabaseError
 
-
-def ingest_xlsx_files(directory: str, db_name: str = "habitrack.db"):
-    # Initialize the HabiTracker instance
+def ingest_smokes_data(filepath: str, habit_name: str, db_name: str = "habitrack.db") -> None:
+    # Initialize the HabiTracker
     tracker = HabiTracker(db_name)
     tracker.initialize_database()
     tracker.create_necessary_tables()
 
-    # List all xlsx files in the specified directory
-    xlsx_files = [f for f in os.listdir(directory) if f.endswith(".xlsx")]
+    # Ensure the habit exists
+    try:
+        tracker.create_habit(habit_name, "A habit being tracked")
+    except DatabaseError as e:
+        # If the habit already exists, we can ignore this error
+        if "already exists" not in str(e):
+            raise
 
-    for file in xlsx_files:
-        file_path = os.path.join(directory, file)
-        workbook = load_workbook(filename=file_path)
-        sheet = workbook.active
+    # Read the Excel file
+    df = pd.read_excel(filepath, header=None)
 
-        # Iterate through rows 2 to 31
-        for row in range(2, 32):
-            day = sheet[f"A{row}"].value
-            if day is None:
-                continue
+    # Iterate over each row in the DataFrame
+    for _, row in df.iterrows():
+        date_str = row[0]
+        smokes = row[1:5].sum()  # Sum the smokes from the relevant columns
 
-            # Extract columns B-E and calculate the total
-            total_entries = sum(
-                sheet[f"{col}{row}"].value or 0 for col in ["B", "C", "D", "E"]
-            )
+        # Convert date string to datetime object
+        date = datetime.strptime(date_str, '%Y-%m-%d')
 
-            # Insert entries into the database
-            for _ in range(total_entries):
-                tracker.record_habit_entry("smoke weed")
+        # Create entries for each smoke
+        for _ in range(smokes):
+            # Set the timestamp to 12PM noon
+            entry_timestamp = datetime.combine(date, datetime.min.time()) + timedelta(hours=12)
+            tracker.record_habit_entry(habit_name, entry_timestamp)
 
-    # Close the database connection
-    tracker.close_connection()
+    print(f"Data ingestion complete for {habit_name} from {filepath}.")
 
+def main():
+    parser = argparse.ArgumentParser(description="Ingest smoke data from spreadsheets into the habitracker database.")
+    parser.add_argument('path', nargs='?', help="Directory path or spreadsheet file")
+    parser.add_argument('habit_name', nargs='?', help="Name of the habit to track")
+    args = parser.parse_args()
+
+    # Prompt for path if not provided
+    if not args.path:
+        args.path = input("Please enter the directory path or spreadsheet file: ")
+
+    # Prompt for habit name if not provided
+    if not args.habit_name:
+        args.habit_name = input("Please enter the name of the habit: ")
+
+    # Check if the provided path is a directory or a file
+    if os.path.isdir(args.path):
+        # Iterate over all 'xlsx' files in the specified directory
+        for filename in os.listdir(args.path):
+            if filename.endswith('.xlsx'):
+                filepath = os.path.join(args.path, filename)
+                ingest_smokes_data(filepath, args.habit_name)
+    elif os.path.isfile(args.path) and args.path.endswith('.xlsx'):
+        # Ingest the single spreadsheet file
+        ingest_smokes_data(args.path, args.habit_name)
+    else:
+        print("Invalid path. Please provide a valid directory path or spreadsheet file.")
 
 if __name__ == "__main__":
-    ingest_xlsx_files(".")
+    main()
