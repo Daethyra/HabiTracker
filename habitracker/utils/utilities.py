@@ -1,7 +1,7 @@
 import logging
 import sqlite3
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 import streamlit as st
 
@@ -163,7 +163,13 @@ class HabiTracker:
 
     def get_habits(self) -> List[str]:
         """
-        Retrieve all habits from the database.
+        Retrieves the list of habits from the database.
+
+        Returns:
+            list: A list of habit names.
+
+        Raises:
+            DatabaseError: If an error occurs while retrieving the habits.
         """
         if not self.conn:
             raise DatabaseError("Database connection not established")
@@ -176,7 +182,17 @@ class HabiTracker:
 
     def get_habit_entries(self, habit_name: str = None) -> List[str]:
         """
-        Retrieve habit entries from the database.
+        Retrieves the habit entries from the database.
+
+        Args:
+            habit_name (str, optional): The name of the habit to filter entries by. 
+                                        If None, retrieves entries for all habits.
+
+        Returns:
+            list: A list of entry timestamps.
+
+        Raises:
+            DatabaseError: If an error occurs while retrieving the habit entries.
         """
         if not self.conn:
             raise DatabaseError("Database connection not established")
