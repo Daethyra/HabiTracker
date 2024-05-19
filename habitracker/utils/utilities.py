@@ -108,7 +108,7 @@ class HabiTracker:
             self.conn.commit()
             logging.info(f"Successfully created habit: {habit_name}")
             st.success(f"Successfully created habit: {habit_name}")
-            
+
         except sqlite3.IntegrityError as e:
             # Handle the case where the habit already exists
             # Need to add a case for when there's a an update to the description, should ask user for confirmation with both the before and after shown to them
@@ -144,8 +144,7 @@ class HabiTracker:
             with self.conn:
                 # First we need to Get the habit_id for the given habit_name
                 habit_id = self.conn.execute(
-                    "SELECT habit_id FROM habits WHERE habit_name = ?",
-                    (habit_name,)
+                    "SELECT habit_id FROM habits WHERE habit_name = ?", (habit_name,)
                 ).fetchone()[0]
 
                 execution_timestamp = datetime.now()
@@ -155,8 +154,10 @@ class HabiTracker:
                     (habit_id, execution_timestamp),
                 )
             logging.info(f"Successfully recorded entry for habit: {habit_name}")
-            st.success(f"Successfully recorded entry for habit: {habit_name.upper()} at ({execution_timestamp})")
-            
+            st.success(
+                f"Successfully recorded entry for habit: {habit_name.upper()} at ({execution_timestamp})"
+            )
+
         except sqlite3.Error as e:
             raise DatabaseError(f"Error recording habit entry: {e}") from e
 
@@ -185,14 +186,14 @@ def display_habit_history(conn: sqlite3.Connection, habit_name: str) -> None:
         WHERE h.habit_name = ? AND he.entry_timestamp >= datetime('now', '-4 weeks')
         ORDER BY he.entry_timestamp DESC
         """,
-        (habit_name,)
-    ).fetchall() # Store the result of a query in a variable
+        (habit_name,),
+    ).fetchall()  # Store the result of a query in a variable
     try:
         # Section Header
         st.markdown("<h3>Habits in the last four weeks:</h3>", unsafe_allow_html=True)
         # Table Header
         st.markdown("| Habit Name | Last Entry |", unsafe_allow_html=True)
-        
+
         # Iteratively insert data into the table
         for row in query_result:
             st.markdown(
