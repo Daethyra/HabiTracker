@@ -2,10 +2,11 @@ import logging
 import sqlite3
 from datetime import datetime, timedelta
 
+import calplot
 import matplotlib.pyplot as plt
 import pandas as pd
-import seaborn as sns
 import streamlit as st
+from matplotlib.colors import ListedColormap
 from utils import DatabaseError, HabiTracker
 
 # Configure the app
@@ -49,49 +50,36 @@ if entries:
     df["entry_timestamp"] = pd.to_datetime(df["entry_timestamp"])
     df["date"] = df["entry_timestamp"].dt.date
 
-    # Filter data for the last 6 weeks
+    # Filter data for the last 30 days
     end_date = datetime.now().date()
-    start_date = end_date - timedelta(weeks=6)
+    start_date = end_date - timedelta(days=30)
     df = df[(df["date"] >= start_date) & (df["date"] <= end_date)]
-
-    # Generate a complete date range
-    all_dates = pd.date_range(start=start_date, end=end_date).date
-    all_dates_df = pd.DataFrame(all_dates, columns=["date"])
 
     # Group by date and count occurrences
     heatmap_data = df.groupby("date").size().reset_index(name="count")
 
-    # Merge with the complete date range to fill missing dates with zero counts
-    heatmap_data = all_dates_df.merge(heatmap_data, on="date", how="left").fillna(0)
+    # Ensure the date column is a datetime type and set it as the index
+    heatmap_data["date"] = pd.to_datetime(heatmap_data["date"])
+    heatmap_data.set_index("date", inplace=True)
 
-    # Pivot the data to create a matrix suitable for a heatmap
-    heatmap_data = heatmap_data.pivot_table(
-        index="date", values="count", aggfunc="sum"
-    ).fillna(0)
-
-    # Create a calendar heatmap
-    fig, ax = plt.subplots(figsize=(10, 6))
-
+    # Create a calendar heatmap using calplot
     if visualize_option == "Specific Habit" and habit_to_visualize == "smoke weed":
         # Custom color scale for "smoke weed"
-        cmap = sns.color_palette(
-            ["#9fc5e8", "#93c47d", "#f44336", "#990a00"], as_cmap=True
-        )
-        bounds = [0, 1, 2, 5, 6]
-        norm = plt.Normalize(vmin=0, vmax=6)
+        cmap = ListedColormap(["#9fc5e8", "#93c47d", "#f44336", "#990a00"])
+        vmin, vmax = 0, 6
     else:
         # Custom color scale for the main heatmap
-        cmap = sns.color_palette(
-            ["#9fc5e8", "#93c47d", "#f44336", "#990a00"], as_cmap=True
-        )
-        bounds = [0, 5, 10, 15, 20]
-        norm = plt.Normalize(vmin=0, vmax=20)
+        cmap = ListedColormap(["#9fc5e8", "#93c47d", "#f44336", "#990a00"])
+        vmin, vmax = 0, 20
 
-    sns.heatmap(
-        heatmap_data.T, cmap=cmap, norm=norm, cbar=True, ax=ax, annot=True, fmt="g"
-    )
-    ax.set_title(
-        f"Heatmap for {habit_to_visualize if visualize_option == 'Specific Habit' else 'All Habits'}"
+    fig, ax = calplot.calplot(
+        heatmap_data["count"],
+        cmap=cmap,
+        vmin=vmin,
+        vmax=vmax,
+        colorbar=True,
+        suptitle=f"Heatmap for {habit_to_visualize if visualize_option == 'Specific Habit' else 'All Habits'}",
+        figsize=(10, 6),
     )
     st.pyplot(fig)
 else:
