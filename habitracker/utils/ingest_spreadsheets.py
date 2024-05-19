@@ -56,10 +56,10 @@ def ingest_smokes_data(
                 continue
 
         # Create entries for each smoke
-        for _ in range(smokes):
-            # Set the timestamp to 12PM noon
+        for i in range(smokes):
+            # Set the timestamp to a different time for each smoke entry
             entry_timestamp = datetime.combine(date, datetime.min.time()) + timedelta(
-                hours=12
+                hours=i
             )
             tracker.record_habit_entry(habit_name, entry_timestamp)
 
