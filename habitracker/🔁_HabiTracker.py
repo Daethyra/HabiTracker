@@ -47,13 +47,13 @@ else:
 
 if entries:
     df = pd.DataFrame(entries, columns=["entry_timestamp"])
-    df["entry_timestamp"] = pd.to_datetime(df["entry_timestamp"])
+
+    # Convert entry_timestamp to datetime, handling any errors gracefully
+    df["entry_timestamp"] = pd.to_datetime(df["entry_timestamp"], errors="coerce")
     df["date"] = df["entry_timestamp"].dt.date
 
-    # # Filter data for the last 30 days
-    # end_date = datetime.now().date()
-    # start_date = end_date - timedelta(days=30)
-    # df = df[(df["date"] >= start_date) & (df["date"] <= end_date)]
+    # Drop rows with invalid timestamps
+    df.dropna(subset=["entry_timestamp"], inplace=True)
 
     # Group by date and count occurrences
     heatmap_data = df.groupby("date").size().reset_index(name="count")
