@@ -44,12 +44,16 @@ def ingest_smokes_data(
         # Parse the status to get the number of smokes
         smokes = parse_smokes(status)
 
-        # Check if date_str is already a datetime object
+        # Check if date_str is already a datetime object or a valid date string
         if isinstance(date_str, datetime):
             date = date_str
         else:
-            # Convert date string to datetime object
-            date = datetime.strptime(date_str, "%Y-%m-%d")
+            try:
+                # Convert date string to datetime object
+                date = datetime.strptime(date_str, "%Y-%m-%d")
+            except ValueError:
+                print(f"Skipping invalid date: {date_str}")
+                continue
 
         # Create entries for each smoke
         for _ in range(smokes):

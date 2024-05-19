@@ -50,10 +50,10 @@ if entries:
     df["entry_timestamp"] = pd.to_datetime(df["entry_timestamp"])
     df["date"] = df["entry_timestamp"].dt.date
 
-    # Filter data for the last 30 days
-    end_date = datetime.now().date()
-    start_date = end_date - timedelta(days=30)
-    df = df[(df["date"] >= start_date) & (df["date"] <= end_date)]
+    # # Filter data for the last 30 days
+    # end_date = datetime.now().date()
+    # start_date = end_date - timedelta(days=30)
+    # df = df[(df["date"] >= start_date) & (df["date"] <= end_date)]
 
     # Group by date and count occurrences
     heatmap_data = df.groupby("date").size().reset_index(name="count")
