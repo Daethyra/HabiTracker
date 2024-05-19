@@ -1,8 +1,18 @@
 import os
 import argparse
-import pandas as pd
+from openpyxl import load_workbook
 from datetime import datetime, timedelta
 from utilities import HabiTracker, DatabaseError
+
+def parse_smokes(status: str) -> int:
+    if status == "✅":
+        return 0
+    elif status == "🤘🏼":
+        return 1
+    elif status == "🚫":
+        return 2
+    else:
+        return status.count("❌") + 2
 
 def ingest_smokes_data(filepath: str, habit_name: str, db_name: str = "habitrack.db") -> None:
     # Initialize the HabiTracker
@@ -18,13 +28,17 @@ def ingest_smokes_data(filepath: str, habit_name: str, db_name: str = "habitrack
         if "already exists" not in str(e):
             raise
 
-    # Read the Excel file
-    df = pd.read_excel(filepath, header=None)
+    # Load the workbook and select the active sheet
+    wb = load_workbook(filepath)
+    sheet = wb.active
 
-    # Iterate over each row in the DataFrame
-    for _, row in df.iterrows():
+    # Iterate over each row in the sheet
+    for row in sheet.iter_rows(min_row=2, values_only=True):
         date_str = row[0]
-        smokes = row[1:5].sum()  # Sum the smokes from the relevant columns
+        status = row[5]  # Column F contains the status
+
+        # Parse the status to get the number of smokes
+        smokes = parse_smokes(status)
 
         # Convert date string to datetime object
         date = datetime.strptime(date_str, '%Y-%m-%d')
