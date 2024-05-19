@@ -1,6 +1,6 @@
 import os
 import argparse
-from openpyxl import load_workbook
+import pandas as pd
 from datetime import datetime, timedelta
 from utilities import HabiTracker, DatabaseError
 
@@ -32,17 +32,13 @@ def ingest_smokes_data(
         if "already exists" not in str(e):
             raise
 
-    # Load the workbook and select the active sheet
-    wb = load_workbook(filepath)
-    sheet = wb.active
+    # Read the Excel file
+    df = pd.read_excel(filepath, header=None)
 
-    # Iterate over each row in the sheet
-    for row in sheet.iter_rows(min_row=2, values_only=True):
+    # Iterate over each row in the DataFrame
+    for _, row in df.iterrows():
         date_str = row[0]
-        status = row[5]  # Column F contains the status
-
-        # Parse the status to get the number of smokes
-        smokes = parse_smokes(status)
+        smokes = row[1:5].sum()  # Sum the smokes from the relevant columns
 
         # Check if date_str is already a datetime object or a valid date string
         if isinstance(date_str, datetime):
