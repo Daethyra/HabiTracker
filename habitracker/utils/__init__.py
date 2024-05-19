@@ -1,1 +1,1 @@
-from .utilities import HabiTracker, DatabaseError, display_habit_history
+from .utilities import HabiTracker, DatabaseError
