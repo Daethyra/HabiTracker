@@ -6,9 +6,7 @@ from typing import List, Optional
 import streamlit as st
 
 # Set up logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 
 
 class DatabaseError(Exception):
@@ -185,7 +183,7 @@ class HabiTracker:
         Retrieves the habit entries from the database.
 
         Args:
-            habit_name (str, optional): The name of the habit to filter entries by. 
+            habit_name (str, optional): The name of the habit to filter entries by.
                                         If None, retrieves entries for all habits.
 
         Returns:
@@ -200,12 +198,11 @@ class HabiTracker:
         try:
             if habit_name:
                 habit_id = self.conn.execute(
-                    "SELECT habit_id FROM habits WHERE habit_name = ?",
-                    (habit_name,)
+                    "SELECT habit_id FROM habits WHERE habit_name = ?", (habit_name,)
                 ).fetchone()[0]
                 entries = self.conn.execute(
                     "SELECT entry_timestamp FROM habit_entries WHERE habit_id = ?",
-                    (habit_id,)
+                    (habit_id,),
                 ).fetchall()
             else:
                 entries = self.conn.execute(

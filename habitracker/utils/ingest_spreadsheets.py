@@ -4,6 +4,7 @@ from openpyxl import load_workbook
 from datetime import datetime, timedelta
 from utilities import HabiTracker, DatabaseError
 
+
 def parse_smokes(status: str) -> int:
     if status == "✅":
         return 0
@@ -14,7 +15,10 @@ def parse_smokes(status: str) -> int:
     else:
         return status.count("❌") + 2
 
-def ingest_smokes_data(filepath: str, habit_name: str, db_name: str = "habitrack.db") -> None:
+
+def ingest_smokes_data(
+    filepath: str, habit_name: str, db_name: str = "habitrack.db"
+) -> None:
     # Initialize the HabiTracker
     tracker = HabiTracker(db_name)
     tracker.initialize_database()
@@ -41,20 +45,25 @@ def ingest_smokes_data(filepath: str, habit_name: str, db_name: str = "habitrack
         smokes = parse_smokes(status)
 
         # Convert date string to datetime object
-        date = datetime.strptime(date_str, '%Y-%m-%d')
+        date = datetime.strptime(date_str, "%Y-%m-%d")
 
         # Create entries for each smoke
         for _ in range(smokes):
             # Set the timestamp to 12PM noon
-            entry_timestamp = datetime.combine(date, datetime.min.time()) + timedelta(hours=12)
+            entry_timestamp = datetime.combine(date, datetime.min.time()) + timedelta(
+                hours=12
+            )
             tracker.record_habit_entry(habit_name, entry_timestamp)
 
     print(f"Data ingestion complete for {habit_name} from {filepath}.")
 
+
 def main():
-    parser = argparse.ArgumentParser(description="Ingest smoke data from spreadsheets into the habitracker database.")
-    parser.add_argument('path', nargs='?', help="Directory path or spreadsheet file")
-    parser.add_argument('habit_name', nargs='?', help="Name of the habit to track")
+    parser = argparse.ArgumentParser(
+        description="Ingest smoke data from spreadsheets into the habitracker database."
+    )
+    parser.add_argument("path", nargs="?", help="Directory path or spreadsheet file")
+    parser.add_argument("habit_name", nargs="?", help="Name of the habit to track")
     args = parser.parse_args()
 
     # Prompt for path if not provided
@@ -69,14 +78,17 @@ def main():
     if os.path.isdir(args.path):
         # Iterate over all 'xlsx' files in the specified directory
         for filename in os.listdir(args.path):
-            if filename.endswith('.xlsx'):
+            if filename.endswith(".xlsx"):
                 filepath = os.path.join(args.path, filename)
                 ingest_smokes_data(filepath, args.habit_name)
-    elif os.path.isfile(args.path) and args.path.endswith('.xlsx'):
+    elif os.path.isfile(args.path) and args.path.endswith(".xlsx"):
         # Ingest the single spreadsheet file
         ingest_smokes_data(args.path, args.habit_name)
     else:
-        print("Invalid path. Please provide a valid directory path or spreadsheet file.")
+        print(
+            "Invalid path. Please provide a valid directory path or spreadsheet file."
+        )
+
 
 if __name__ == "__main__":
     main()
