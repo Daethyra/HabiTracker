@@ -84,8 +84,8 @@ if entries:
     )
     # Display the heatmap
     st.pyplot(fig)
-    
-    # Close the database connection
-    tracker.conn.close()
 else:
     st.write("No data to visualize.")
+
+# Close the database connection
+tracker.conn.close()
