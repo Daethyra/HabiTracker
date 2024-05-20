@@ -1,5 +1,4 @@
 import logging
-import sqlite3
 from datetime import datetime, timedelta
 
 import calplot
@@ -14,10 +13,12 @@ st.set_page_config(page_title="HabiTrack: Visualize Your Usage", page_icon="🔁
 st.title(":orange[HabiTrack]")
 st.subheader("Track Your Usage and Gather Data Over Time")
 
-# Initialize the HabiTracker
-tracker = HabiTracker()
-tracker.initialize_database()
-tracker.create_necessary_tables()
+# Initialize the HabiTracker if not already done
+if "tracker" not in st.session_state:
+    st.session_state.tracker = HabiTracker()
+    st.session_state.tracker.create_necessary_tables()
+
+tracker = st.session_state.tracker
 
 # Add or Select a Habit
 habit_names = tracker.get_habits()
@@ -65,7 +66,9 @@ if entries:
     # Display a calendar heatmap using calplot depending on the selected option
     if visualize_option == "Specific Habit" and habit_to_visualize == "smoke weed":
         # Custom color scale for "smoke weed"
-        cmap = ListedColormap(["#9fc5e8", "#93c47d", "#ffd966", "#ff9999", "#ff6666", "#660000"])
+        cmap = ListedColormap(
+            ["#9fc5e8", "#93c47d", "#ffd966", "#ff9999", "#ff6666", "#660000"]
+        )
         vmin, vmax = 0, 7
     else:
         # Custom color scale for the main heatmap
@@ -80,12 +83,9 @@ if entries:
         colorbar=True,
         suptitle=f'''Heatmap for "{habit_to_visualize if visualize_option == 'Specific Habit' else 'All Habits'}"''',
         figsize=(10, 3),
-        yearlabel_kws={'fontname':'Arial'},
+        yearlabel_kws={"fontname": "Arial"},
     )
     # Display the heatmap
     st.pyplot(fig)
-    
-    # Close the database connection
-    tracker.conn.close()
 else:
     st.write("No data to visualize.")
