@@ -14,7 +14,7 @@ openpyxl = "^3.1.2"
 calplot = "^0.1.7.5"
 
 [tool.poetry.group.dev.dependencies]
-black = "^24.4.2"
+black = "^24.8.0"
 
 [build-system]
 requires = ["poetry-core"]
